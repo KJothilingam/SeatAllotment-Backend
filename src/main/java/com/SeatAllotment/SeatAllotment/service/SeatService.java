@@ -42,7 +42,7 @@ public class SeatService {
      * Fetch Employee details by Seat ID
      */
 
-    public Optional<Employee> getEmployeeBySeat(String seatId) {
+    public Optional<Employee>   getEmployeeBySeat(String seatId) {
         Optional<Seat> seatOptional = seatRepository.findById(seatId);
 
         if (seatOptional.isPresent()) {

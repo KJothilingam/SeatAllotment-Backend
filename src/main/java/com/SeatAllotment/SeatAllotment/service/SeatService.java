@@ -25,23 +25,13 @@ public class SeatService {
     @Autowired
     private EmployeeRepository employeeRepository;
 
-    /**
-     * Fetch all seats
-     */
     public List<Seat> getAllSeats() {
         return seatRepository.findAll();
     }
 
-    /**
-     * Fetch seat details by ID
-     */
     public Optional<Seat> getSeatById(String id) {
         return seatRepository.findById(id);
     }
-
-    /**
-     * Fetch Employee details by Seat ID
-     */
 
     public Optional<Employee>   getEmployeeBySeat(String seatId) {
         Optional<Seat> seatOptional = seatRepository.findById(seatId);

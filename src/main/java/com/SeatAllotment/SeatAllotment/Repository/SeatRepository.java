@@ -14,7 +14,6 @@ import java.util.Optional;
 
 @Repository
 public interface SeatRepository extends JpaRepository<Seat,String > {
-//    Optional<Seat> findBySeatId(String seatId);
     Optional<Seat> findById(String id);
 
     Optional<Seat> findByEmployeeId(Long employeeId);

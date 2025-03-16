@@ -40,102 +40,11 @@ public class EmployeeService {
         return employee;
     }
 
-
     public Optional<Employee> getEmployeeBySeat(String seatId) {
         return employeeRepository.findBySeatId(seatId);
     }
 
-
-
-//    public Employee addEmployee(Employee employee) {
-//        // Check if the employee ID is provided
-//        if (employee.getId() == null) {
-//            throw new RuntimeException("Employee ID must be provided");
-//        }
-//
-//        // Check if the ID already exists to prevent duplicate primary key errors
-//        if (employeeRepository.existsById(employee.getId())) {
-//            throw new RuntimeException("Employee ID already exists");
-//        }
-//
-//
-//        // Check if a seat is assigned
-//        if (employee.getSeatId() != null && !"Unassigned".equalsIgnoreCase(employee.getSeatId())) {
-//            Optional<Seat> seatOpt = seatRepository.findById(employee.getSeatId());
-//
-//            // Verify seat existence
-//            if (seatOpt.isEmpty()) {
-//                throw new RuntimeException("Seat does not exist.");
-//            }
-//
-//            Seat seat = seatOpt.get();
-//
-//            if (seat.getStatus() != SeatStatus.VACANT) {
-//                throw new SeatUnavailableException("Seat is not available. It is currently " + seat.getStatus());
-//            }
-//
-//
-//            // Assign the seat to the employee
-//            seat.setStatus(OCCUPIED);
-//            seat.setEmployeeId(employee.getId());
-//            seatRepository.save(seat); // Update seat table
-//        }
-//
-//        return employeeRepository.save(employee); // Save employee with seatId
-//    }
-public ResponseEntity<Map<String, Object>> addEmployee(Employee employee) {
-    Map<String, Object> response = new HashMap<>();
-
-    if (employee.getId() == null) {
-        response.put("message", "❌ Employee ID must be provided");
-        response.put("employee", new Employee()); // Empty object
-        return ResponseEntity.badRequest().body(response);
-    }
-
-    if (employeeRepository.existsById(employee.getId())) {
-        response.put("message", "❌ Employee ID already exists");
-        response.put("employee", new Employee());
-        return ResponseEntity.badRequest().body(response);
-    }
-
-    // Handling Work From Home condition
-    if ("Work From Home".equalsIgnoreCase(employee.getSeatId())) {
-        employee.setSeatId("Work From Home - " + employee.getId());
-        response.put("message", "✅ Employee assigned to Work From Home");
-    }
-    // Handling seat assignment
-    else if (employee.getSeatId() != null && !"Unassigned".equalsIgnoreCase(employee.getSeatId())) {
-        Optional<Seat> seatOpt = seatRepository.findById(employee.getSeatId());
-
-        if (seatOpt.isEmpty()) {
-            response.put("message", "❌ Seat does not exist.");
-            response.put("employee", new Employee());
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        Seat seat = seatOpt.get();
-
-        if (seat.getStatus() != SeatStatus.VACANT) {
-            employee.setSeatId("Unassigned");
-            response.put("message", "❌ Seat already occupied! Assigned as Unassigned.");
-        } else {
-            seat.setStatus(SeatStatus.OCCUPIED);
-            seat.setEmployeeId(employee.getId());
-            seatRepository.save(seat);
-            response.put("message", "✅ Employee assigned to seat " + employee.getSeatId());
-        }
-    } else {
-        employee.setSeatId("Unassigned");
-        response.put("message", "⚠️ No seat assigned, defaulting to Unassigned.");
-    }
-
-    Employee savedEmployee = employeeRepository.save(employee);
-    response.put("employee", savedEmployee);
-
-    return ResponseEntity.ok(response);
-}
-
-public void resetSeatByEmployeeId(Long employeeId) {
+    public void resetSeatByEmployeeId(Long employeeId) {
     Optional<Seat> seat = seatRepository.findByEmployeeId(employeeId);
     if (seat.isPresent()) {
         Seat updatedSeat = seat.get();
@@ -192,5 +101,60 @@ public void resetSeatByEmployeeId(Long employeeId) {
     }
 
 
+    public ResponseEntity<Map<String, Object>> addEmployee(Employee employee) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Validate Employee ID
+        if (employee.getId() == null) {
+            response.put("message", "❌ Employee ID must be provided");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        System.out.println("🔍 Seat ID Received: " + employee.getSeatId());
+
+        // Ensure "Work From Home" is not overridden
+        if ("Work From Home".equalsIgnoreCase(employee.getSeatId())) {
+            response.put("message", "✅ Employee assigned to Work From Home");
+            return saveEmployee(employee, response);
+        }
+
+        // If no seat ID provided, default to "Unassigned"
+        if (employee.getSeatId() == null || employee.getSeatId().trim().isEmpty()) {
+            employee.setSeatId("Unassigned");
+            response.put("message", "⚠️ No seat assigned, defaulting to Unassigned.");
+            return saveEmployee(employee, response);
+        }
+
+        // Validate manual seat assignment
+        Optional<Seat> seatOpt = seatRepository.findById(employee.getSeatId());
+
+        if (seatOpt.isPresent()) {
+            Seat seat = seatOpt.get();
+
+            if (seat.getStatus() != SeatStatus.VACANT) {
+                response.put("message", "❌ Seat " + seat.getId() + " is already occupied! Please select a different seat.");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            // Assign seat and update status
+            seat.setStatus(SeatStatus.OCCUPIED);
+            seat.setEmployeeId(employee.getId());
+            seatRepository.save(seat); // Update seat table
+
+            employee.setSeatId(String.valueOf(seat.getId())); // Ensure seat ID is stored correctly
+            response.put("message", "✅ Employee assigned to seat " + seat.getId());
+        } else {
+            response.put("message", "❌ Seat does not exist.");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        return saveEmployee(employee, response);
+    }
+
+    private ResponseEntity<Map<String, Object>> saveEmployee(Employee employee, Map<String, Object> response) {
+        Employee savedEmployee = employeeRepository.save(employee);
+        response.put("employee", savedEmployee);
+        return ResponseEntity.ok(response);
+    }
 
 }

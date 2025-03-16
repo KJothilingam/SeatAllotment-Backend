@@ -20,9 +20,6 @@ public class SeatController {
     @Autowired
     private SeatService seatService;
 
-    /**
-     * Fetch all seats
-     */
     @GetMapping
     public ResponseEntity<List<Seat>> getAllSeats() {
         List<Seat> seats = seatService.getAllSeats();
@@ -62,35 +59,6 @@ public class SeatController {
             public final String message = "Seat not found";
         });
     }
-
-
-//    @GetMapping("/{seatId}/employee-details")
-//    public ResponseEntity<?> getEmployeeBySeat(@PathVariable String seatId) {
-//        Optional<Seat> seatOptional = seatService.getSeatById(seatId);
-//
-//        if (seatOptional.isPresent()) {
-//            Seat seat = seatOptional.get();
-//            Optional<Employee> employeeOptional = seatService.getEmployeeBySeat(seatId);
-//
-//            if (employeeOptional.isPresent()) {
-//                Employee employee = employeeOptional.get();
-//
-//                // Send only necessary details
-//                return ResponseEntity.ok().body(new Object() {
-//                    public final String seatId = seat.getId();
-//                    public final String status = seat.getStatus().toString();
-//                    public final String employeeName = employee.getName();
-//                    public final String role = employee.getRole();
-//                    public final String department = employee.getDepartment();
-//                });
-//            }
-//            return ResponseEntity.ok().body("Seat is vacant");
-//        }
-//
-//        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Seat not found");
-//    }
-
-
 
 
 }

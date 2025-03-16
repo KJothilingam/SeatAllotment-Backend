@@ -43,19 +43,38 @@ public class EmployeController{
         return employee.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-//    @PostMapping("/create")
-//    public ResponseEntity<Employee> addEmployee(@RequestBody Employee employee) {
-//        Employee newEmployee = employeeService.addEmployee(employee);
-//        return ResponseEntity.ok(newEmployee);
-//    }
+
 
     @PostMapping("/create")
-    public ResponseEntity<Map<String, Object>> addEmployee(@RequestBody Employee employee) {
+    public ResponseEntity<Map<String, Object>> addEmployee(@RequestBody Map<String, Object> requestBody) {
+        System.out.println("🔍 Raw Request Data: " + requestBody);
+
+        Employee employee = new Employee();
+
+        // Convert employeeid to Long (Fix Type Issue)
+        try {
+            employee.setId(Long.parseLong(requestBody.get("employeeid").toString()));
+        } catch (NumberFormatException | NullPointerException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", "❌ Invalid Employee ID format. It must be a number."));
+        }
+
+        // Set other fields
+        employee.setName(requestBody.get("name").toString());
+        employee.setDepartment(requestBody.get("department").toString());
+        employee.setRole(requestBody.get("role").toString());
+
+        // Fix Seat ID Issue
+        String seatId = requestBody.get("seat_id") != null ? requestBody.get("seat_id").toString() : "Unassigned";
+        employee.setSeatId(seatId);
+
+        System.out.println("🔍 Processed Employee Object: " + employee.toString());
+
         return employeeService.addEmployee(employee);
     }
 
 
-        @PutMapping("/update/{id}")
+
+    @PutMapping("/update/{id}")
         public ResponseEntity<Map<String, Object>> updateEmployee(
                 @PathVariable Long id, @RequestBody Employee updatedEmployee) {
             return employeeService.updateEmployee(id, updatedEmployee);

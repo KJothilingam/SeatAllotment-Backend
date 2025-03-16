@@ -1,5 +1,6 @@
 package com.SeatAllotment.SeatAllotment.service;
 
+import com.SeatAllotment.SeatAllotment.Enum.SeatStatus;
 import com.SeatAllotment.SeatAllotment.Model.Employee;
 import com.SeatAllotment.SeatAllotment.Model.Seat;
 import com.SeatAllotment.SeatAllotment.Repository.EmployeeRepository;
@@ -55,5 +56,15 @@ public class SeatService {
         return Optional.empty();
     }
 
+
+    public void resetSeatByEmployeeId(Long employeeId) {
+        Optional<Seat> seat = seatRepository.findByEmployeeId(employeeId);
+        if (seat.isPresent()) {
+            Seat updatedSeat = seat.get();
+            updatedSeat.setEmployeeId(null);
+            updatedSeat.setStatus(SeatStatus.VACANT);
+            seatRepository.save(updatedSeat);
+        }
+    }
 
 }

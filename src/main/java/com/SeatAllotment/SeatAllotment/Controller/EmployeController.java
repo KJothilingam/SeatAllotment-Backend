@@ -28,6 +28,7 @@ public class EmployeController{
     public List<Employee> getAllEmployees() {
         return employeeService.getAllEmployees();
     }
+
     @GetMapping("/{id}")
     public ResponseEntity<Employee> getEmployeeById(@PathVariable Long id) {
         Optional<Employee> employee = employeeService.getEmployeeById(id);
@@ -42,11 +43,18 @@ public class EmployeController{
         return employee.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
+//    @PostMapping("/create")
+//    public ResponseEntity<Employee> addEmployee(@RequestBody Employee employee) {
+//        Employee newEmployee = employeeService.addEmployee(employee);
+//        return ResponseEntity.ok(newEmployee);
+//    }
+
     @PostMapping("/create")
-    public ResponseEntity<Employee> addEmployee(@RequestBody Employee employee) {
-        Employee newEmployee = employeeService.addEmployee(employee);
-        return ResponseEntity.ok(newEmployee);
+    public ResponseEntity<Map<String, Object>> addEmployee(@RequestBody Employee employee) {
+        return employeeService.addEmployee(employee);
     }
+
+
 
     @PutMapping("/update/{id}")
     public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @RequestBody Employee employee) {
@@ -57,11 +65,18 @@ public class EmployeController{
             return ResponseEntity.notFound().build();
         }
     }
+
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteEmployee(@PathVariable Long id) {
         Optional<Employee> employee = employeeService.getEmployeeById(id);
+
         if (employee.isPresent()) {
+            // Reset the seat if assigned
+            seatService.resetSeatByEmployeeId(id);
+
+            // Delete the employee
             employeeService.deleteEmployee(id);
+
             return ResponseEntity.ok(
                     Map.of("message", "Employee '" + employee.get().getName() + "' (ID: " + id + ") deleted successfully.")
             );
@@ -71,6 +86,22 @@ public class EmployeController{
             );
         }
     }
+
+
+//    @DeleteMapping("/delete/{id}")
+//    public ResponseEntity<?> deleteEmployee(@PathVariable Long id) {
+//        Optional<Employee> employee = employeeService.getEmployeeById(id);
+//        if (employee.isPresent()) {
+//            employeeService.deleteEmployee(id);
+//            return ResponseEntity.ok(
+//                    Map.of("message", "Employee '" + employee.get().getName() + "' (ID: " + id + ") deleted successfully.")
+//            );
+//        } else {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+//                    Map.of("error", "Employee Not Found", "message", "Employee with ID " + id + " not found.")
+//            );
+//        }
+//    }
 
 
 

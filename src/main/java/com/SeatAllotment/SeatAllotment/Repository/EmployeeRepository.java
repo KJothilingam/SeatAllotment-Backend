@@ -10,6 +10,7 @@ import java.util.Optional;
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     Optional<Employee> findBySeatId(String seatId);
+//    Optional<Employee> findBySeatId(String seatId);
 
     boolean existsBySeatId(String seatId);
 }

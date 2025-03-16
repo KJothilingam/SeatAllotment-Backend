@@ -55,16 +55,12 @@ public class EmployeController{
     }
 
 
-
-    @PutMapping("/update/{id}")
-    public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @RequestBody Employee employee) {
-        try {
-            Employee updatedEmployee = employeeService.updateEmployee(id, employee);
-            return ResponseEntity.ok(updatedEmployee);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+        @PutMapping("/update/{id}")
+        public ResponseEntity<Map<String, Object>> updateEmployee(
+                @PathVariable Long id, @RequestBody Employee updatedEmployee) {
+            return employeeService.updateEmployee(id, updatedEmployee);
         }
-    }
+
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteEmployee(@PathVariable Long id) {
@@ -86,22 +82,6 @@ public class EmployeController{
             );
         }
     }
-
-
-//    @DeleteMapping("/delete/{id}")
-//    public ResponseEntity<?> deleteEmployee(@PathVariable Long id) {
-//        Optional<Employee> employee = employeeService.getEmployeeById(id);
-//        if (employee.isPresent()) {
-//            employeeService.deleteEmployee(id);
-//            return ResponseEntity.ok(
-//                    Map.of("message", "Employee '" + employee.get().getName() + "' (ID: " + id + ") deleted successfully.")
-//            );
-//        } else {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-//                    Map.of("error", "Employee Not Found", "message", "Employee with ID " + id + " not found.")
-//            );
-//        }
-//    }
 
 
 

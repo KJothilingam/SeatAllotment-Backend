@@ -135,16 +135,57 @@ public ResponseEntity<Map<String, Object>> addEmployee(Employee employee) {
     return ResponseEntity.ok(response);
 }
 
-    public Employee updateEmployee(Long id, Employee updatedEmployee) {
-        return employeeRepository.findById(id).map(emp -> {
-            emp.setName(updatedEmployee.getName());
-            emp.setDepartment(updatedEmployee.getDepartment());
-            emp.setRole(updatedEmployee.getRole());
-            emp.setSeatId(updatedEmployee.getSeatId()); // Allow "Unassigned"
-            return employeeRepository.save(emp);
-
-        }).orElseThrow(() -> new RuntimeException("Employee not found"));
+public void resetSeatByEmployeeId(Long employeeId) {
+    Optional<Seat> seat = seatRepository.findByEmployeeId(employeeId);
+    if (seat.isPresent()) {
+        Seat updatedSeat = seat.get();
+        updatedSeat.setEmployeeId(null);
+        updatedSeat.setStatus(SeatStatus.VACANT);
+        seatRepository.save(updatedSeat);
     }
+}
+
+    public ResponseEntity<Map<String, Object>> updateEmployee(Long id, Employee updatedEmployee) {
+        Map<String, Object> response = new HashMap<>();
+
+        Employee existingEmployee = employeeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("❌ Employee not found"));
+
+        String newSeatId = updatedEmployee.getSeatId();
+        String currentSeatId = existingEmployee.getSeatId();
+
+        if (!newSeatId.equalsIgnoreCase(currentSeatId)) {
+            if (newSeatId.equalsIgnoreCase("Work From Home") || newSeatId.equalsIgnoreCase("Unassigned")) {
+                resetSeatByEmployeeId(existingEmployee.getEmployeeid());
+                existingEmployee.setSeatId(newSeatId);
+            } else {
+                Seat newSeat = seatRepository.findById(newSeatId)
+                        .orElseThrow(() -> new RuntimeException("❌ New seat not found"));
+
+                if (newSeat.getStatus() == SeatStatus.OCCUPIED) {
+                    response.put("message", "❌ Seat " + newSeatId + " is already occupied!");
+                    return ResponseEntity.badRequest().body(response);
+                }
+
+                resetSeatByEmployeeId(existingEmployee.getEmployeeid());
+                newSeat.setStatus(SeatStatus.OCCUPIED);
+                newSeat.setEmployeeId(id);
+                seatRepository.save(newSeat);
+                existingEmployee.setSeatId(newSeatId);
+            }
+        }
+
+        existingEmployee.setName(updatedEmployee.getName());
+        existingEmployee.setRole(updatedEmployee.getRole());
+        existingEmployee.setDepartment(updatedEmployee.getDepartment());
+
+        Employee savedEmployee = employeeRepository.save(existingEmployee);
+        response.put("message", "✅ Employee updated successfully");
+        response.put("employee", savedEmployee);
+
+        return ResponseEntity.ok(response);
+    }
+
 
     public void deleteEmployee(Long id) {
         employeeRepository.deleteById(id);

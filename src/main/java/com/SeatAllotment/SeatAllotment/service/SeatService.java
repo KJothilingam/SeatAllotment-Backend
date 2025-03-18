@@ -57,4 +57,8 @@ public class SeatService {
         }
     }
 
+    public List<Seat> getVacantSeats() {
+        return seatRepository.findByStatus(SeatStatus.VACANT);  // ✅ Fetch all vacant seats
+    }
+
 }

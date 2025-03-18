@@ -60,5 +60,9 @@ public class SeatController {
         });
     }
 
-
+    @GetMapping("/vacant")
+    public ResponseEntity<List<Seat>> getVacantSeats() {
+        List<Seat> vacantSeats = seatService.getVacantSeats();
+        return ResponseEntity.ok(vacantSeats);
+    }
 }

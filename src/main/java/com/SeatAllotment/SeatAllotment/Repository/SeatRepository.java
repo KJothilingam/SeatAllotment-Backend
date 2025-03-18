@@ -15,6 +15,6 @@ import java.util.Optional;
 @Repository
 public interface SeatRepository extends JpaRepository<Seat,String > {
     Optional<Seat> findById(String id);
-
+    List<Seat> findByStatus(SeatStatus status);
     Optional<Seat> findByEmployeeId(Long employeeId);
 }

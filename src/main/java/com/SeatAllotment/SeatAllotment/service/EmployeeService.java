@@ -112,20 +112,13 @@ public class EmployeeService {
 
         System.out.println("🔍 Seat ID Received: " + employee.getSeatId());
 
-        // Ensure "Work From Home" is not overridden
-        if ("Work From Home".equalsIgnoreCase(employee.getSeatId())) {
-            response.put("message", "✅ Employee assigned to Work From Home");
+        // ✅ Allow "Work From Home" and "Unassigned" without checking the database
+        if ("Work From Home".equalsIgnoreCase(employee.getSeatId()) || "Unassigned".equalsIgnoreCase(employee.getSeatId())) {
+            response.put("message", "✅ Employee assigned to " + employee.getSeatId());
             return saveEmployee(employee, response);
         }
 
-        // If no seat ID provided, default to "Unassigned"
-        if (employee.getSeatId() == null || employee.getSeatId().trim().isEmpty()) {
-            employee.setSeatId("Unassigned");
-            response.put("message", "⚠️ No seat assigned, defaulting to Unassigned.");
-            return saveEmployee(employee, response);
-        }
-
-        // Validate manual seat assignment
+        // Validate manual seat assignment (Only check real seats)
         Optional<Seat> seatOpt = seatRepository.findById(employee.getSeatId());
 
         if (seatOpt.isPresent()) {
